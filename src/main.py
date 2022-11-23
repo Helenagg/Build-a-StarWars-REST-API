@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User
+from models import db, User, Planet, People
 #from models import Person
 
 app = Flask(__name__)
@@ -38,40 +38,15 @@ people = [{"id": 1,
     "eye_color": "yellow", 
     "birth_year": "112BBY"}]
 
-planets = [
-    {"id":0,
-    "name": "Tatooine", 
-    "rotation_period": "23", 
-    "orbital_period": "304", 
-    "diameter": "10465", 
-    "climate": "arid", 
-    "gravity": "1 standard", 
-    "terrain": "desert", 
-    "surface_water": "1", 
-    "population": "200000"},
-    {"id":1,
-    "name": "Alderaan", 
-    "rotation_period": "24", 
-    "orbital_period": "364", 
-    "diameter": "12500", 
-    "climate": "temperate", 
-    "gravity": "1 standard", 
-    "terrain": "grasslands, mountains", 
-    "surface_water": "40", 
-    "population": "2000000000"}
-]
-
 users = [
     {"id": 1,
-    "first_name": "Bob",
-    "last_name": "Dylan",
     "email": "bob@dylan2.com",
-    "password": "asda"},
+    "password": "asda",
+    "is_active": "True"},
     {"id": 2,
-    "first_name": "Paul",
-    "last_name": "McCartney",
-    "email": "paul@dmccartney.com",
-    "password": "bcbc"}
+    "email": "paul@dylan2.com",
+    "password": "bcbc",
+    "is_active": "True"},
 ]
 
 favorites = [
@@ -97,12 +72,17 @@ def sitemap():
 
 @app.route('/user', methods=['GET'])
 def handle_hello():
-
+    response_user = users
     response_body = {
         "msg": "Hello, this is your GET /user response "
     }
 
-    return jsonify(response_body), 200
+    return jsonify(response_user), 200
+
+@app.route('/user/<int:user_id>', methods=['GET'])
+def select_user(user_id):
+    user = list(filter(lambda element: element['id'] == user_id, users))
+    return jsonify(user), 200
 
 @app.route('/people', methods=['GET'])
 def handle_people():
@@ -114,25 +94,30 @@ def select_people(people_id):
     person = list(filter(lambda element: element['id'] == people_id, people))
     return jsonify(person), 200
 
+# @app.route('/planet', methods=['GET'])
+# def handle_planet():
+#     response_planet = planets
+#     return jsonify(response_planet), 200
+
 @app.route('/planet', methods=['GET'])
 def handle_planet():
-    response_planet = planets
-    return jsonify(response_planet), 200
+    planets = Planet.query.all()
+    # result = []
+    # for planet in planets:
+    #     result.append(planet.serialize())
+    result = [planet.serialize() for planet in planets]
+    return jsonify(result), 200
+
+@app.route('/planet/<int:id>', methods=['GET'])
+def handle_planetid(id):
+    planets = Planet.query.get(id)
+    result = [planet.serialize() for planet in planets]
+    return jsonify(result), 200
 
 @app.route('/planet/<int:planet_id>', methods=['GET'])
 def select_planet(planet_id):
     planet = list(filter(lambda element: element['id'] == planet_id, planets))
     return jsonify(planet), 200
-
-@app.route('/users', methods=['GET'])
-def handle_user():
-    response_user = users
-    return jsonify(response_user), 200
-
-@app.route('/users/<int:user_id>', methods=['GET'])
-def select_user(user_id):
-    user = list(filter(lambda element: element['id'] == user_id, users))
-    return jsonify(user), 200
 
 @app.route('/favorite', methods=['GET'])
 def handle_fav():
