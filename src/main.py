@@ -20,24 +20,6 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
-people = [{"id": 1,
-        "name": "Luke Skywalker", 
-        "height": "172", 
-        "mass": "77", 
-        "hair_color": "blond", 
-        "skin_color": "fair", 
-        "eye_color": "blue", 
-        "birth_year": "19BBY"},
-
-    {"id": 2,
-    "name": "C-3PO", 
-    "height": "167", 
-    "mass": "75", 
-    "hair_color": "n/a", 
-    "skin_color": "gold", 
-    "eye_color": "yellow", 
-    "birth_year": "112BBY"}]
-
 users = [
     {"id": 1,
     "email": "bob@dylan2.com",
@@ -87,13 +69,39 @@ def select_user(user_id):
 # Get, Post and Delete People
 @app.route('/people', methods=['GET'])
 def handle_people():
-    response_people = people
-    return jsonify(response_people), 200
+    peoples = People.query.all()
+    result_people = [people.serialize() for people in peoples]
+    return jsonify(result_people), 200
 
 @app.route('/people/<int:people_id>', methods=['GET'])
 def select_people(people_id):
-    person = list(filter(lambda element: element['id'] == people_id, people))
+    person = People.query.get(people_id)
+    person = person.serialize()
     return jsonify(person), 200
+
+@app.route('/people', methods=['POST'])
+def create_people():
+    data = request.data
+    data = json.loads(data)
+
+    person = People(name = data['name'], mass = data['mass'])
+    db.session.add(person)
+    db.session.commit()
+    response_body = {
+        "msg": "Todo Ok! "
+    }
+    return jsonify(response_body), 200
+
+@app.route('/people/<int:people_id>', methods=['DELETE'])
+def delete_person(people_id):
+    person_delete = People.query.get(people_id)
+    db.session.delete(person_delete)
+    db.session.commit()
+
+    response_body = {
+        "msg": "Borrado! "
+    }
+    return jsonify(response_body), 200
 
 # Get, Post and Delete Planets
 @app.route('/planet', methods=['GET'])
@@ -135,6 +143,7 @@ def delete_planet(planet_id):
     }
     return jsonify(response_body), 200    
 
+#Get, post and delete Favorites
 @app.route('/favorite', methods=['GET'])
 def handle_fav():
     response_fav = favorites
