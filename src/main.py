@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
-from flask import Flask, request, jsonify, url_for
+from flask import Flask, request, jsonify, url_for, json
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
@@ -108,16 +108,41 @@ def handle_planet():
     result = [planet.serialize() for planet in planets]
     return jsonify(result), 200
 
-@app.route('/planet/<int:id>', methods=['GET'])
-def handle_planetid(id):
-    planets = Planet.query.get(id)
-    result = [planet.serialize() for planet in planets]
-    return jsonify(result), 200
-
 @app.route('/planet/<int:planet_id>', methods=['GET'])
 def select_planet(planet_id):
-    planet = list(filter(lambda element: element['id'] == planet_id, planets))
+    planet = Planet.query.get(planet_id)
+    planet = planet.serialize()
+    # print(planet)
+    # response_body = {
+    #     "msg": "Hello, this is your GET /user response "
+    # }
     return jsonify(planet), 200
+
+@app.route('/planet', methods=['POST'])
+def create_planet():  
+    data = request.data
+    data = json.loads(data)
+
+    planet = Planet(name = data['name'], rotation_period = data['rotation_period'])
+    db.session.add(planet)
+    db.session.commit()
+    response_body = {
+        "msg": "Todo Ok! "
+    }
+    return jsonify(response_body), 200
+
+@app.route('/planet/<int:planet_id>', methods=['DELETE'])
+def delete_planet(planet_id):  
+    
+    response_body = {
+        "msg": "Borrado! "
+    }
+    return jsonify(response_body), 200    
+
+# @app.route('/planet/<int:planet_id>', methods=['GET'])
+# def select_planet(planet_id):
+#     planet = list(filter(lambda element: element['id'] == planet_id, planets))
+#     return jsonify(planet), 200
 
 @app.route('/favorite', methods=['GET'])
 def handle_fav():
