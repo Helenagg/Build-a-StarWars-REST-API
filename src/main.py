@@ -84,6 +84,7 @@ def select_user(user_id):
     user = list(filter(lambda element: element['id'] == user_id, users))
     return jsonify(user), 200
 
+# Get, Post and Delete People
 @app.route('/people', methods=['GET'])
 def handle_people():
     response_people = people
@@ -94,11 +95,7 @@ def select_people(people_id):
     person = list(filter(lambda element: element['id'] == people_id, people))
     return jsonify(person), 200
 
-# @app.route('/planet', methods=['GET'])
-# def handle_planet():
-#     response_planet = planets
-#     return jsonify(response_planet), 200
-
+# Get, Post and Delete Planets
 @app.route('/planet', methods=['GET'])
 def handle_planet():
     planets = Planet.query.all()
@@ -112,10 +109,6 @@ def handle_planet():
 def select_planet(planet_id):
     planet = Planet.query.get(planet_id)
     planet = planet.serialize()
-    # print(planet)
-    # response_body = {
-    #     "msg": "Hello, this is your GET /user response "
-    # }
     return jsonify(planet), 200
 
 @app.route('/planet', methods=['POST'])
@@ -132,17 +125,15 @@ def create_planet():
     return jsonify(response_body), 200
 
 @app.route('/planet/<int:planet_id>', methods=['DELETE'])
-def delete_planet(planet_id):  
+def delete_planet(planet_id): 
+    planet_delete = Planet.query.get(planet_id)
+    db.session.delete(planet_delete)
+    db.session.commit()
     
     response_body = {
         "msg": "Borrado! "
     }
     return jsonify(response_body), 200    
-
-# @app.route('/planet/<int:planet_id>', methods=['GET'])
-# def select_planet(planet_id):
-#     planet = list(filter(lambda element: element['id'] == planet_id, planets))
-#     return jsonify(planet), 200
 
 @app.route('/favorite', methods=['GET'])
 def handle_fav():
