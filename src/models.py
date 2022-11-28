@@ -3,6 +3,7 @@ from flask_sqlalchemy import SQLAlchemy
 db = SQLAlchemy()
 
 class User(db.Model):
+    __tablename__ = 'user'
     id = db.Column(db.Integer, primary_key=True)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(80), unique=False, nullable=False)
@@ -51,19 +52,24 @@ class People(db.Model):
             # do not serialize the password, its a security breach
         }
 
-# class Favorites(db.Model):
-#     id = db.Column(db.Integer, primary_key=True)
-#     id_user = db.Column(db.Integer, ForeignKey('user.id'))
-#     id_planet = db.Column(db.Integer, ForeignKey('planet.id'))
-#     id_people = db.Column(db.Integer, ForeignKey('people.id'))
+class Favorites(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    user = db.relationship(User)
+    planet_id = db.Column(db.Integer, db.ForeignKey('planet.id'))
+    planet = db.relationship(Planet)
+    people_id = db.Column(db.Integer, db.ForeignKey('people.id'))
+    people = db.relationship(People)
     
 
-#     def __repr__(self):
-#         return '<Favorites %r>' % self.id
+    def __repr__(self):
+        return '<Favorites %r>' % self.id
 
-#     def serialize(self):
-#         return {
-#             "id": self.id,
-#             "id_user": self.id_user,
-#             # do not serialize the password, its a security breach
-#         }
+    def serialize(self):
+        return {
+            "id": self.id,
+            "user_id": self.user_id,
+            "planet_id": self.planet_id,
+            "people_id": self.people_id
+            # do not serialize the password, its a security breach
+        }
