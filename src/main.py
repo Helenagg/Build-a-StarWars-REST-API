@@ -158,21 +158,23 @@ def handle_fav():
 
 @app.route('/favorite/<int:id>', methods=['GET'])
 def select_fav(id):
-    # user_id = request.json.get('user_id', None)
-    # fav = Favorites.query.filter_by(id)
-    # list_fav = Favorites.query.all()
-    # favorites = [fav.serialize() for fav in list_fav]
-    # x = fav[user_id]
-
-    # favorites = Favorites.query.all()
-    # fav = [favorite.serialize() for favorite in favorites]
-    # x = fav.filter_by(id == fav.user_id)
-
     fav = Favorites.query.filter_by(user_id = id).all()
-    # fav = fav.serialize()
     favorite_user = [favorite.serialize() for favorite in fav]
     print(fav)
     return jsonify(favorite_user), 200
+
+@app.route('/favorite', methods=['POST'])
+def new_fav_planet():  
+    data = request.data
+    data = json.loads(data)
+
+    fav = Favorites(user_id = data['user_id'], planet_id = data['planet_id'])
+    db.session.add(fav)
+    db.session.commit()
+    response_body = {
+        "msg": "Todo Ok! "
+    }
+    return jsonify(response_body), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
