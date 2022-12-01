@@ -20,27 +20,27 @@ db.init_app(app)
 CORS(app)
 setup_admin(app)
 
-users = [
-    {"id": 1,
-    "email": "bob@dylan2.com",
-    "password": "asda",
-    "is_active": "True"},
-    {"id": 2,
-    "email": "paul@dylan2.com",
-    "password": "bcbc",
-    "is_active": "True"},
-]
+# users = [
+#     {"id": 1,
+#     "email": "bob@dylan2.com",
+#     "password": "asda",
+#     "is_active": "True"},
+#     {"id": 2,
+#     "email": "paul@dylan2.com",
+#     "password": "bcbc",
+#     "is_active": "True"},
+# ]
 
-favorites = [
-    {"id": 1,
-    "id_user": 1,
-    "id_planet": 1,
-    "id_people": 1},
-    {"id": 2,
-    "id_user": 2,
-    "id_planet": 1,
-    "id_people": 1}
-]
+# favorites = [
+#     {"id": 1,
+#     "id_user": 1,
+#     "id_planet": 1,
+#     "id_people": 1},
+#     {"id": 2,
+#     "id_user": 2,
+#     "id_planet": 1,
+#     "id_people": 1}
+# ]
 
 # Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
@@ -52,18 +52,22 @@ def handle_invalid_usage(error):
 def sitemap():
     return generate_sitemap(app)
 
+# Get, Post and Delete User
 @app.route('/user', methods=['GET'])
 def handle_hello():
-    response_user = users
+    users = User.query.all()
+    response_user = [user.serialize() for user in users]
     response_body = {
-        "msg": "Hello, this is your GET /user response "
+        "msg": "Users list"
     }
 
     return jsonify(response_user), 200
 
 @app.route('/user/<int:user_id>', methods=['GET'])
 def select_user(user_id):
-    user = list(filter(lambda element: element['id'] == user_id, users))
+    # user = list(filter(lambda element: element['id'] == user_id, users))
+    user = User.query.get(user_id)
+    user = user.serialize()
     return jsonify(user), 200
 
 # Get, Post and Delete People
@@ -143,16 +147,32 @@ def delete_planet(planet_id):
     }
     return jsonify(response_body), 200    
 
-#Get, post and delete Favorites
+# Get, post and delete Favorites
 @app.route('/favorite', methods=['GET'])
 def handle_fav():
-    response_fav = favorites
-    return jsonify(response_fav), 200
+    # favorites = Favorites.query.filter_by(id == user_id)
+    favorites = Favorites.query.all()
+    fav = [favorite.serialize() for favorite in favorites]
 
-@app.route('/favorite/<int:fav_id>', methods=['GET'])
-def select_fav(fav_id):
-    favorite = list(filter(lambda element: element['id'] == fav_id, favorites))
-    return jsonify(favorite), 200
+    return jsonify(fav), 200
+
+@app.route('/favorite/<int:id>', methods=['GET'])
+def select_fav(id):
+    # user_id = request.json.get('user_id', None)
+    # fav = Favorites.query.filter_by(id)
+    # list_fav = Favorites.query.all()
+    # favorites = [fav.serialize() for fav in list_fav]
+    # x = fav[user_id]
+
+    # favorites = Favorites.query.all()
+    # fav = [favorite.serialize() for favorite in favorites]
+    # x = fav.filter_by(id == fav.user_id)
+
+    fav = Favorites.query.filter_by(user_id = id).all()
+    # fav = fav.serialize()
+    favorite_user = [favorite.serialize() for favorite in fav]
+    print(fav)
+    return jsonify(favorite_user), 200
 
 # this only runs if `$ python src/main.py` is executed
 if __name__ == '__main__':
